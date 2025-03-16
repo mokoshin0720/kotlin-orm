@@ -41,6 +41,8 @@ dependencies {
     implementation("org.jetbrains.exposed:exposed-spring-boot-starter:$exposedVersion")
 
     implementation("com.h2database:h2:2.2.224")
+
+    implementation("org.postgresql:postgresql:42.6.0")
 }
 
 // Apply a specific Java toolchain to ease working on different environments.

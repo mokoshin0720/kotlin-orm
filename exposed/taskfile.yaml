@@ -1,0 +1,17 @@
+version: "3"
+
+tasks:
+  default:
+    silent: true
+    cmds:
+      - task --list-all
+
+  setup:
+    cmds:
+      - docker network create exposed || true
+
+  start:
+    deps:
+      - setup
+    cmds:
+      - docker compose up -d postgres --wait
