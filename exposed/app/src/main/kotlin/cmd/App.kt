@@ -15,18 +15,43 @@ object UserDetails : IntIdTable() {
     val age = integer("age")
 }
 
+class UserDetail(id: EntityID<Int>) : IntEntity(id) {
+    companion object : IntEntityClass<UserDetail>(UserDetails)
+    
+    var user by User referencedOn UserDetails.userId
+    var name by UserDetails.name
+    var age by UserDetails.age
+}
+
 class User(id: EntityID<Int>) : IntEntity(id) {
-    companion object : IntEntityClass<User>(Users)
+    companion object : IntEntityClass<User>(Users) {
+        fun create(model: UserDomainModel): User {
+            val user = User.new(15) {
+            }
+    
+            UserDetails.insert {
+                it[userId] = user.id.value
+                it[name] = model.name
+                it[age] = model.age
+            }
+            
+            return user
+        }
+    }
 
     val detail by UserDetail.backReferencedOn(UserDetails.userId)
 }
 
-class UserDetail(id: EntityID<Int>) : IntEntity(id) {
-    companion object : IntEntityClass<UserDetail>(UserDetails)
-
-    var user by User referencedOn UserDetails.userId
-    var name by UserDetails.name
-    var age by UserDetails.age
+data class UserDomainModel(
+    val id: Int,
+    val name: String,
+    val age: Int
+) {
+    companion object {
+        fun create(name: String, age: Int): UserDomainModel {
+            return UserDomainModel(id=1, name=name, age=age)
+        }
+    }
 }
 
 fun main() {
@@ -45,15 +70,10 @@ fun main() {
         SchemaUtils.create(Users)
         SchemaUtils.create(UserDetails)
 
-        val user = User.new(15) {
-        }
+        val user = UserDomainModel.create(name="shinya", age=25)
 
-        UserDetails.insert {
-            it[userId] = user.id.value
-            it[name] = "b"
-            it[age] = 27
-        }
-
+        User.create(user)
+        
         println(User.all().joinToString { it.detail.name })
     }
 }
