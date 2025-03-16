@@ -2,31 +2,32 @@ package cmd
 
 import org.jetbrains.exposed.dao.*
 import org.jetbrains.exposed.dao.id.EntityID
-import org.jetbrains.exposed.dao.id.IntIdTable
+import org.jetbrains.exposed.dao.id.UUIDTable
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
+import java.util.UUID
 
-object Users : IntIdTable() {
+object Users : UUIDTable() {
 }
 
-object UserDetails : IntIdTable() {
-    val userId = integer("user_id").references(Users.id)
+object UserDetails : UUIDTable() {
+    val userId = uuid("user_id").references(Users.id)
     val name = varchar("name", 50)
     val age = integer("age")
 }
 
-class UserDetail(id: EntityID<Int>) : IntEntity(id) {
-    companion object : IntEntityClass<UserDetail>(UserDetails)
+class UserDetail(id: EntityID<UUID>) : UUIDEntity(id) {
+    companion object : UUIDEntityClass<UserDetail>(UserDetails)
     
     var user by User referencedOn UserDetails.userId
     var name by UserDetails.name
     var age by UserDetails.age
 }
 
-class User(id: EntityID<Int>) : IntEntity(id) {
-    companion object : IntEntityClass<User>(Users) {
+class User(id: EntityID<UUID>) : UUIDEntity(id) {
+    companion object : UUIDEntityClass<User>(Users) {
         fun create(model: UserDomainModel): User {
-            val user = User.new(15) {
+            val user = User.new(model.id) {
             }
     
             UserDetails.insert {
@@ -43,13 +44,13 @@ class User(id: EntityID<Int>) : IntEntity(id) {
 }
 
 data class UserDomainModel(
-    val id: Int,
+    val id: UUID,
     val name: String,
     val age: Int
 ) {
     companion object {
         fun create(name: String, age: Int): UserDomainModel {
-            return UserDomainModel(id=1, name=name, age=age)
+            return UserDomainModel(id=UUID.randomUUID(), name=name, age=age)
         }
     }
 }
